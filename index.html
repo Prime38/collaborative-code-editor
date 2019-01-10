@@ -26,12 +26,14 @@
 </head>
 
 <body>
-    <div id="m" name='m'>
+    <div id="m" name='m'>function foo(){
+        console.log("hello world")    
+    }
     </div>
     <script src="/ace-builds/src-min/ace.js"></script>
     <script>
         var editor = window.ace.edit("m");
-        editor.setTheme("ace/theme/twillight");
+        editor.setTheme("ace/theme/twilight");
         editor.session.setMode("ace/mode/javascript");
         $(function () {
             var socket = io();
@@ -39,29 +41,36 @@
             var now
             var pre
             editor.on('change', function () {
-                var code = editor.getSession().getValue();
-                if (now != code) {
+                var code = editor.getValue();
+                console.log("sending now: "+now);
+                console.log("sending code: "+code);
+                if (now != code&&code!='') {
                     now = code;
-                    socket.emit('chat message', now);
+                    console.log(editor.getCursorPosition());
+                    
+                    msg={msg:now,pos:editor.getCursorPosition()}
+                    socket.emit('chat message', msg);
                 }
             });
             socket.on('chat message', function (msg) {
-                if (now != msg) {
-                    console.log("now:" + now)
-                    console.log("msg:" + msg);
-                    now = msg
+                if (now != msg.msg&& msg.msg!='') {
+                    console.log("now:  " + now)
+                    console.log("msg:  " + msg);
+                    now = msg.msg
                     editor.setValue(now);
-                    var row = editor.session.getLength() - 1
-                    var column = editor.session.getLine(row).length // or simply Infinity
-                    editor.gotoLine(row + 1, column)
-
+                    var pos=msg.pos
+                    var row = pos.row
+                    var column =pos.column
+                    console.log("row: "+row);
+                    console.log("coloumn "+column)
+                    
+                    editor.gotoLine(row , column+1,true)
+                    // editor.renderer.scrollToRow(row);
+                    
                 }
-
             });
         })
     </script>
 </body>
-
-
 </html>
 <!-- socket.emit('chat message', code); -->
