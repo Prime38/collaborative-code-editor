@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #m {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+</head>
+
+<body>
+    <div id="m" name='m'>
+    </div>
+    <script src="/ace-builds/src-min/ace.js"></script>
+    <script>
+        var editor = window.ace.edit("m");
+        editor.setTheme("ace/theme/twillight");
+        editor.session.setMode("ace/mode/javascript");
+        $(function () {
+            var socket = io();
+            var pre = editor.getValue();
+            var now
+            var pre
+            editor.on('change', function () {
+                var code = editor.getSession().getValue();
+                if (now != code) {
+                    now = code;
+                    socket.emit('chat message', now);
+                }
+            });
+            socket.on('chat message', function (msg) {
+                if (now != msg) {
+                    console.log("now:" + now)
+                    console.log("msg:" + msg);
+                    now = msg
+                    editor.setValue(now);
+                    var row = editor.session.getLength() - 1
+                    var column = editor.session.getLine(row).length // or simply Infinity
+                    editor.gotoLine(row + 1, column)
+
+                }
+
+            });
+        })
+    </script>
+</body>
+
+
+</html>
+<!-- socket.emit('chat message', code); -->
